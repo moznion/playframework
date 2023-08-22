@@ -7,6 +7,7 @@ package play.api.http
 import scala.concurrent.Future
 import scala.jdk.OptionConverters._
 
+import akka.NotUsed
 import akka.stream.scaladsl.Source
 import akka.stream.Materializer
 import akka.util.ByteString
@@ -122,6 +123,22 @@ object HttpEntity {
     }
     def asJava                  = new JHttpEntity.Chunked(chunks.asJava, contentType.toJava)
     def as(contentType: String) = copy(contentType = Option(contentType))
+  }
+
+  /**
+   * An entity for HTTP HEAD method.
+   *
+   * This class always has the fixed content-length and no data.
+   *
+   * @param contentLengthValue The content length.
+   * @param contentType The content type, if known.
+   */
+  final case class Head(contentLengthValue: Long, contentType: Option[String]) extends HttpEntity {
+    override def isKnownEmpty: Boolean = true
+    override def contentLength: Option[Long] = Option.apply(contentLengthValue)
+    override def dataStream: Source[ByteString, NotUsed] = Source.empty
+    override def asJava: JHttpEntity = new JHttpEntity.Head(contentLengthValue, contentType.toJava)
+    override def as(contentType: String): HttpEntity = copy(contentType = Option(contentType))
   }
 }
 

@@ -248,4 +248,55 @@ public abstract class HttpEntity {
           chunks.asScala(), OptionConverters.toScala(contentType));
     }
   }
+
+  /**
+   * An entity for HTTP HEAD method.
+   * <p>
+   * This class instance always has the fixed content-length and no data.
+   */
+  public static final class Head extends HttpEntity {
+    private final long contentLength;
+    private final Optional<String> contentType;
+
+    /**
+     * A constructor for {@link Head}.
+     *
+     * @param contentLength The content length.
+     * @param contentType The content type, if known.
+     */
+    public Head(long contentLength, Optional<String> contentType) {
+      this.contentLength = contentLength;
+      this.contentType = contentType;
+    }
+
+    @Override
+    public Optional<String> contentType() {
+      return contentType;
+    }
+
+    @Override
+    public boolean isKnownEmpty() {
+      return true;
+    }
+
+    @Override
+    public Optional<Long> contentLength() {
+      return Optional.of(contentLength);
+    }
+
+    @Override
+    public Source<ByteString, ?> dataStream() {
+      return Source.empty();
+    }
+
+    @Override
+    public HttpEntity as(String contentType) {
+      return new Head(contentLength, Optional.ofNullable(contentType));
+    }
+
+    @Override
+    public play.api.http.HttpEntity asScala() {
+      return new play.api.http.HttpEntity.Head(contentLength, OptionConverters.toScala(contentType));
+    }
+  }
 }
